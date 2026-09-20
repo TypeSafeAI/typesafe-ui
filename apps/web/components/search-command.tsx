@@ -25,6 +25,7 @@ import {
 } from "@workspace/ui/components/command"
 import { Kbd, KbdGroup } from "@workspace/ui/components/kbd"
 
+import { labRegistry } from "@/lib/lab-registry"
 import { groups, registry } from "@/lib/registry"
 import { site } from "@/lib/site"
 
@@ -83,6 +84,8 @@ function SearchProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
+function subscribeHydration() { return () => {} }
+
 function SearchTrigger({
   className,
   compact = false,
@@ -91,6 +94,7 @@ function SearchTrigger({
   compact?: boolean
 }) {
   const { setOpen } = useSearch()
+  const hydrated = React.useSyncExternalStore(subscribeHydration, () => true, () => false)
 
   if (compact) {
     return (
@@ -99,7 +103,8 @@ function SearchTrigger({
         size="icon-sm"
         className={className}
         onClick={() => setOpen(true)}
-        aria-label="Search components"
+        disabled={!hydrated}
+      aria-label="Search components"
         aria-keyshortcuts="Control+K Meta+K"
       >
         <SearchIcon />
@@ -112,6 +117,7 @@ function SearchTrigger({
       variant="outline"
       className={className}
       onClick={() => setOpen(true)}
+      disabled={!hydrated}
       aria-label="Search components"
       aria-keyshortcuts="Control+K Meta+K"
     >
@@ -189,6 +195,9 @@ function SearchDialog() {
               ))}
           </CommandGroup>
         ))}
+        <CommandGroup heading="Jev Labs">
+          {labRegistry.map(entry => <CommandItem key={entry.id} value={`Lab: ${entry.title}`} keywords={[entry.id, entry.group, entry.description]} onSelect={() => run(() => router.push(`/lab#${entry.id}`))}><FlaskConicalIcon />{entry.title}</CommandItem>)}
+        </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="Actions">
           <CommandItem

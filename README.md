@@ -10,7 +10,7 @@ Reusable React components and interactive interface patterns for TypeSafe AI pro
 
 A Turborepo + pnpm workspace with a Next.js component browser, source previews, install/import examples, and an interactive Lab. The UI uses the shadcn `base-nova` style, Base UI primitives, Tailwind v4, and RTL-aware components.
 
-The site follows the OpenCoven UI layout: a sticky topbar, grouped component rail, per-component Preview/Source and Install/Import tabs, and an “On this page” outline. Its TypeSafe-inspired theme uses pink primary, teal live-state accents, dark mode by default, IBM Plex typography, and a dot-grid background.
+The site pairs an original optical-glass photographic introduction with an OpenCoven-inspired workspace: a sticky topbar, grouped component rail, per-component Preview/Source and Install/Import tabs, and an “On this page” outline. Its TypeSafe-inspired theme uses pink primary, teal live-state accents, dark mode by default, IBM Plex typography, a dot-grid background, and softly illuminated preview surfaces.
 
 `@workspace/ui` is a **private workspace package**, not a published npm package. The imports below work inside this monorepo. For another application, deliberately port the components, styles, dependencies, and aliases you need; do not assume `npm install typesafe-ui` or a hosted registry exists. A visual “live” state is not proof of a real Jev API call.
 
@@ -27,6 +27,8 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
+The [Jev Labs guide](docs/jev-labs.md) covers 169 local examples: all 110 upstream catalog examples, 56 workspace scenarios, and three interface patterns. Labs share the library’s sidebar, source inspection, and installation/import workflow. All outputs are explicitly local fixtures.
+
 Open the address printed by the development server, normally `http://localhost:3000`. The library is at `/`, and interactive scenes are at `/lab`. Press `d` to toggle dark mode and `⌘K` to search components.
 
 | Command | Purpose |
@@ -35,9 +37,10 @@ Open the address printed by the development server, normally `http://localhost:3
 | `pnpm build` | Build the workspace. |
 | `pnpm lint` | Run workspace lint tasks. |
 | `pnpm typecheck` | Run workspace TypeScript checks. |
+| `pnpm test:e2e` | Run Playwright browser checks for the catalog, Lab, navigation, themes, and motion. |
 | `pnpm format` | Format source files; this writes changes. |
 
-There is currently no root `test` or browser-test script. Lint, typecheck, and build results must not be described as unit or end-to-end test coverage.
+There is no root unit-test script. `pnpm test:e2e` runs the checked-in Playwright suite (local Google Chrome; bundled Chromium in CI). Browser checks complement visual and keyboard inspection; they do not prove accessibility.
 
 ## Layout
 

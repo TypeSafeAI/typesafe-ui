@@ -8,7 +8,7 @@ test.describe("lab", () => {
     ).toBeVisible()
     await expect(page.getByText("01 / 03")).toBeVisible()
 
-    await page.getByRole("button", { name: "Decision" }).click()
+    await page.getByRole("navigation", { name: "Lab navigation", exact: true }).getByRole("link", { name: "Decision", exact: true }).click()
     await expect(page).toHaveURL(/#decision$/)
     await expect(
       page.getByRole("heading", { level: 2, name: "Decision" })
@@ -63,7 +63,7 @@ test.describe("lab", () => {
     const live = page.getByRole("switch").first()
     await expect(page.getByText("Demo mode")).toBeVisible()
     await live.click()
-    await expect(page.getByText("Live · your key")).toBeVisible()
+    await expect(page.getByText("Simulated live")).toBeVisible()
 
     await page.getByRole("tab", { name: "Danger zone" }).click()
     await page.getByRole("button", { name: "Delete" }).click()

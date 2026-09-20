@@ -3,10 +3,11 @@
  * Demos live in components/demos.tsx and are keyed by `id`.
  */
 
-export const groups = ["Actions", "Forms", "Layout", "Overlays"] as const
+export const groups = ["Actions", "Forms", "Layout", "Overlays", "Jev"] as const
 export type Group = (typeof groups)[number]
 
 export const groupDetails: Record<Group, { id: string; description: string }> = {
+  Jev: { id: "group-jev", description: "Typed contracts and transparent decision results for Jev interfaces." },
   Actions: {
     id: "group-actions",
     description: "Buttons, badges, and menus. The parts people press.",
@@ -36,6 +37,8 @@ export type RegistryEntry = {
 }
 
 export const registry: RegistryEntry[] = [
+  { id: "jev-contract", title: "Jev contract", group: "Jev", description: "Inspect noul, choice, and score questions with their exact candidate definitions.", exports: ["JevContract"], states: ["choice", "noul", "score"] },
+  { id: "jev-result", title: "Jev result", group: "Jev", description: "Typed values with explicit provenance, unknown results, and failure states.", exports: ["JevResult"], states: ["empty", "illustrative", "provider", "unknown", "error"] },
   {
     id: "button",
     title: "Button",
@@ -187,6 +190,10 @@ export function entriesFor(group: Group) {
 }
 
 export function installCommand(id: string) {
+  if (id.startsWith("jev-")) return `# Custom workspace component; no hosted shadcn registry entry.
+# From the typesafe-ui repository root:
+pnpm install --frozen-lockfile
+# Import @workspace/ui/components/${id}`
   return `pnpm dlx shadcn@latest add ${id}`
 }
 

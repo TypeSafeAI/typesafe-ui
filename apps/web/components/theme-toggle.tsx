@@ -32,22 +32,6 @@ function ThemeToggle() {
 
   const dark = mounted ? resolvedTheme === "dark" : true
   const label = dark ? "Use light scheme" : "Use dark scheme"
-  // next-themes disables every transition while the theme flips. Swapping the
-  // icon a frame later lets its cross-fade run once transitions are back.
-  // The first sync after mount runs without a transition so the icon does not
-  // animate on page load when the stored theme differs from the server default.
-  const [iconDark, setIconDark] = React.useState(true)
-  const [settled, setSettled] = React.useState(false)
-  React.useEffect(() => {
-    if (!mounted) return
-    let frame = window.requestAnimationFrame(() => {
-      frame = window.requestAnimationFrame(() => {
-        setIconDark(dark)
-        frame = window.requestAnimationFrame(() => setSettled(true))
-      })
-    })
-    return () => window.cancelAnimationFrame(frame)
-  }, [dark, mounted])
 
   return (
     <Tooltip>
@@ -68,15 +52,15 @@ function ThemeToggle() {
         >
           <SunIcon
             className={cn(
-              settled && iconSwap,
-              iconDark ? iconShown : iconHidden
+              iconSwap,
+              dark ? iconShown : iconHidden
             )}
           />
           <MoonIcon
             className={cn(
-              settled && iconSwap,
+              iconSwap,
               "absolute inset-0",
-              iconDark ? iconHidden : iconShown
+              dark ? iconHidden : iconShown
             )}
           />
         </span>

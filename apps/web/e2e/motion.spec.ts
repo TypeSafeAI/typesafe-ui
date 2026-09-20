@@ -4,6 +4,7 @@ test.describe("motion", () => {
   test("buttons scale to 0.96 while pressed", async ({ page }) => {
     await page.goto("/lab")
     const send = page.getByRole("button", { name: "Send" })
+    await send.scrollIntoViewIfNeeded()
     const box = await send.boundingBox()
     if (!box) throw new Error("Send button has no box")
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
@@ -49,7 +50,7 @@ test.describe("motion", () => {
         await scene.evaluate((el) => getComputedStyle(el).animationName)
       ).toBe("none")
 
-      await page.getByRole("button", { name: "Decision" }).click()
+      await page.getByRole("navigation", { name: "Lab navigation", exact: true }).getByRole("link", { name: "Decision", exact: true }).click()
       await expect(
         page.getByRole("heading", { level: 2, name: "Decision" })
       ).toBeVisible()

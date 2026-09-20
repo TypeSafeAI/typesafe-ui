@@ -1,6 +1,8 @@
 "use client"
 
 import * as React from "react"
+import { JevContract } from "@workspace/ui/components/jev-contract"
+import { JevResult } from "@workspace/ui/components/jev-result"
 import {
   ArrowRightIcon,
   ArrowUpIcon,
@@ -589,7 +591,17 @@ function CommandDemo() {
   )
 }
 
+function JevContractDemo() {
+  return <div className="w-full max-w-xl"><JevContract questions={[{ id: "route", label: "Next action", type: "choice", instructions: "Choose only from the actions permitted by the host policy.", criteria: { search_docs: "Read approved documentation", needs_human: "Ask a human when evidence is missing" } }]} /></div>
+}
+function JevResultDemo() {
+  const [state, setState] = React.useState("illustrative")
+  return <div className="w-full max-w-xl space-y-3"><label className="flex items-center gap-3 text-xs">Response state<select className="bg-background rounded border p-2" value={state} onChange={e => setState(e.target.value)}><option value="illustrative">Illustrative</option><option value="unknown">Unknown</option><option value="empty">Empty</option><option value="error">Error</option></select></label><JevResult provenance="illustrative" answers={state === "empty" || state === "error" ? [] : [{ id: "route", label: "Next action", type: "choice", value: state === "unknown" ? null : "search_docs" }]} error={state === "error" ? "Sample request failed. Retry without treating a failure as an empty answer." : undefined} /></div>
+}
+
 export const demos: Record<string, React.ComponentType> = {
+  "jev-contract": JevContractDemo,
+  "jev-result": JevResultDemo,
   button: ButtonDemo,
   badge: BadgeDemo,
   "dropdown-menu": DropdownMenuDemo,

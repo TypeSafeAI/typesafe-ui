@@ -10,14 +10,19 @@ Keep reusable components in `packages/ui`; keep site-specific demos in `apps/web
 
 Do not bundle dependency upgrades, package publication, licensing changes, or new provider integrations into a component or documentation fix. Keep credentials and private data out of examples and screenshots.
 
+## Add a Jev Lab
+
+Read [Jev Labs](docs/jev-labs.md). Add its entry to `apps/web/lib/lab-registry.ts`, reuse the preview components under `apps/web/components/labs`, and keep source/import examples aligned. Preserve upstream IDs, exact question criteria, declared A/B changes, and the MIT attribution. Update the coverage map when refreshing the pinned playground revision. Keep local fixtures visibly distinct from provider results.
+
 ## Validate and submit
 
 ```sh
 pnpm lint
 pnpm typecheck
 pnpm build
+pnpm test:e2e
 ```
 
-There is no root unit-test or E2E script at this revision. For visual changes, check desktop and narrow layouts, light/dark themes, RTL, keyboard focus, labels, and the Preview/Source and Install/Import tabs. Include screenshots or a short recording when helpful.
+There is no root unit-test script. The E2E suite uses local Google Chrome, or bundled Chromium in CI. For visual changes, check desktop and narrow layouts, light/dark themes, RTL, keyboard focus, labels, and the Preview/Source and Install/Import tabs. Include screenshots or a short recording when helpful.
 
 Open a focused pull request describing the change, the affected component or route, the checks actually run, and any unverified behavior. Do not call simulated UI state a live Jev result or claim checks passed when they were skipped.
