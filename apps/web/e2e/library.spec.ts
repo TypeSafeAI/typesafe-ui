@@ -7,7 +7,7 @@ test.describe("library", () => {
   }) => {
     await page.goto("/")
     await expect(
-      page.getByRole("heading", { level: 1, name: "Component library" })
+      page.getByRole("heading", { level: 1, name: "Interfaces, in a different light." })
     ).toBeVisible()
     for (const entry of registry) {
       const article = page.locator(`#${entry.id}`)
@@ -129,6 +129,12 @@ test.describe("library", () => {
 
     test("tooltip", async ({ page }) => {
       await page.goto("/#tooltip")
+      // Hover is not replayed during hydration. Wait for the scroll spy's
+      // client effect before sending the pointer into the server-rendered demo.
+      await expect(
+        page.getByRole("navigation", { name: "Component navigation" })
+          .getByRole("link", { name: "Tooltip", exact: true })
+      ).toHaveAttribute("aria-current", "location")
       await page
         .locator("#tooltip")
         .getByRole("button", { name: "Hover me" })

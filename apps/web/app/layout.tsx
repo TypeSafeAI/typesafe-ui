@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google"
 
 import "@workspace/ui/globals.css"
+import "./studio.css"
 import { DirectionProvider } from "@workspace/ui/components/direction"
 import { TooltipProvider } from "@workspace/ui/components/tooltip"
 import { cn } from "@workspace/ui/lib/utils"

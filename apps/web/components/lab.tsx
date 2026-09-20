@@ -5,421 +5,398 @@ import Link from "next/link"
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  ArrowUpIcon,
   ArrowUpRightIcon,
-  GitBranchIcon,
-  PaperclipIcon,
-  PenLineIcon,
-  RotateCcwIcon,
-  SettingsIcon,
-  XIcon,
+  PanelLeftIcon,
 } from "lucide-react"
-
-import { Badge } from "@workspace/ui/components/badge"
 import { Button } from "@workspace/ui/components/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@workspace/ui/components/card"
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@workspace/ui/components/dialog"
-import { Input } from "@workspace/ui/components/input"
-import { Kbd, KbdGroup } from "@workspace/ui/components/kbd"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@workspace/ui/components/select"
-import { Separator } from "@workspace/ui/components/separator"
-import { Switch } from "@workspace/ui/components/switch"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@workspace/ui/components/tabs"
-import { Textarea } from "@workspace/ui/components/textarea"
-import { cn } from "@workspace/ui/lib/utils"
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@workspace/ui/components/tabs"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetTrigger,
+} from "@workspace/ui/components/sheet"
+import { Badge } from "@workspace/ui/components/badge"
+import { CodeSnippet, CopyButton } from "@/components/code-snippet"
+import {
+  ComposerScene,
+  DecisionScene,
+  SettingsScene,
+} from "@/components/labs/classic-scenes"
+import { TypedPreview } from "@/components/labs/typed-preview"
+import { LabNavigation } from "@/components/labs/lab-navigation"
+import {
+  catalogLabCount,
+  labById,
+  labRegistry,
+  playgroundSource,
+  workspaceLabCount,
+  type LabEntry,
+} from "@/lib/lab-registry"
+import type { LabSources } from "@/lib/lab-sources"
 
-type Scene = {
-  id: string
-  title: string
-  subtitle: string
-  icon: React.ComponentType<{ className?: string }>
-  Component: React.ComponentType
+const classicNames = {
+  composer: "ComposerScene",
+  decision: "DecisionScene",
+  settings: "SettingsScene",
 }
-
-const models = [
-  { value: "jev-latest", label: "jev-latest" },
-  { value: "jev-fast", label: "jev-fast" },
-]
-
-function ComposerScene() {
-  const [message, setMessage] = React.useState("Review the changed files and suggest a focused fix.")
-  const [attached, setAttached] = React.useState(true)
-  const [model, setModel] = React.useState<string | null>("jev-latest")
-  const [sent, setSent] = React.useState(false)
-
-  function reset() {
-    setMessage("Review the changed files and suggest a focused fix.")
-    setAttached(true)
-    setSent(false)
-  }
-
-  return (
-    <div className="flex w-full max-w-2xl flex-col gap-3">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <PenLineIcon className="text-primary size-4" />
-            Compose
-          </CardTitle>
-          <CardDescription>
-            <GitBranchIcon className="me-1 inline size-3.5" strokeWidth={1.5} />
-            feat / focused-fix
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <Textarea
-            value={message}
-            onChange={(event) => setMessage(event.target.value)}
-            rows={4}
-            placeholder="What should Jev decide?"
-            aria-label="Request"
-          />
-          {attached ? (
-            <div className="flex">
-              <Badge variant="outline" className="h-7 gap-2 ps-2 pe-1">
-                <PaperclipIcon />
-                spec.md <span className="text-muted-foreground font-mono">4.2 KB</span>
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  className="rounded-full"
-                  aria-label="Remove attachment"
-                  onClick={() => setAttached(false)}
-                >
-                  <XIcon />
-                </Button>
-              </Badge>
-            </div>
-          ) : null}
-          <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setAttached(true)} disabled={attached}>
-              <PaperclipIcon data-icon="inline-start" />
-              Attach sample
-            </Button>
-            <Select items={models} value={model} onValueChange={setModel}>
-              <SelectTrigger size="sm" aria-label="Model">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {models.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button variant="ghost" size="icon-sm" aria-label="Reset" onClick={reset}>
-              <RotateCcwIcon />
-            </Button>
-          </div>
-        </CardContent>
-        <CardFooter className="justify-between">
-          <span className="text-muted-foreground text-xs">
-            {sent ? "Received locally. No model connected." : "Make changes with the context you provide."}
-          </span>
-          <span className="flex items-center gap-3">
-            <KbdGroup className="text-muted-foreground hidden sm:inline-flex">
-              <Kbd>⌘</Kbd>
-              <Kbd>↵</Kbd>
-            </KbdGroup>
-            <Button
-              disabled={!message.trim()}
-              onClick={() => {
-                setSent(true)
-                setMessage("")
-              }}
-            >
-              Send
-              <ArrowUpIcon data-icon="inline-end" />
-            </Button>
-          </span>
-        </CardFooter>
-      </Card>
-      <p className="text-muted-foreground text-center text-xs">Local preview. No requests are sent.</p>
-    </div>
-  )
+const classics: Record<string, React.ComponentType | undefined> = {
+  composer: ComposerScene,
+  decision: DecisionScene,
+  settings: SettingsScene,
 }
-
-const options = [
-  { id: "search_docs", label: "Search docs", keywords: ["how", "docs", "guide", "what"] },
-  { id: "open_ticket", label: "Open ticket", keywords: ["bug", "broken", "error", "fail"] },
-  { id: "escalate", label: "Escalate", keywords: ["urgent", "outage", "down", "security"] },
-  { id: "answer", label: "Answer directly", keywords: ["thanks", "hello", "price", "plan"] },
-]
-
-function score(request: string) {
-  const words = request.toLowerCase().split(/\W+/).filter(Boolean)
-  const raw = options.map((option) => 1 + option.keywords.filter((keyword) => words.includes(keyword)).length * 4)
-  const total = raw.reduce((sum, value) => sum + value, 0)
-  return options.map((option, index) => ({ ...option, confidence: raw[index]! / total }))
-}
-
-function DecisionScene() {
-  const [request, setRequest] = React.useState("The dashboard is broken after the last deploy, is this a known bug?")
-  const [decided, setDecided] = React.useState<ReturnType<typeof score> | null>(null)
-  const ranked = decided ? [...decided].sort((a, b) => b.confidence - a.confidence) : null
-  const pick = ranked?.[0]
-
-  return (
-    <div className="grid w-full max-w-3xl gap-4 md:grid-cols-[minmax(0,11fr)_minmax(0,10fr)]">
-      <Card>
-        <CardHeader>
-          <CardTitle>Request</CardTitle>
-          <CardDescription>Jev picks one option from a fixed list. Your code executes it.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <Textarea value={request} onChange={(event) => setRequest(event.target.value)} rows={3} aria-label="Request" />
-          <div>
-            <p className="eyebrow mb-2">Fixed options</p>
-            <ul className="flex flex-wrap gap-1.5">
-              {options.map((option) => (
-                <li key={option.id}>
-                  <Badge variant={pick?.id === option.id ? "default" : "outline"} className="font-mono">
-                    {option.id}
-                  </Badge>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </CardContent>
-        <CardFooter className="justify-end gap-2">
-          <Button variant="outline" onClick={() => setDecided(null)} disabled={!decided}>
-            Clear
-          </Button>
-          <Button onClick={() => setDecided(score(request))} disabled={!request.trim()}>
-            Decide
-            <ArrowRightIcon data-icon="inline-end" />
-          </Button>
-        </CardFooter>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>Decision</CardTitle>
-          <CardDescription>
-            {pick ? (
-              <>
-                Pick: <span className="text-foreground font-mono">{pick.id}</span>
-              </>
-            ) : (
-              "No decision yet."
-            )}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-2 text-sm">
-          {ranked ? (
-            ranked.map((option, index) => (
-              <div key={option.id} className="flex flex-col gap-1">
-                <div className="flex items-center justify-between">
-                  <span className={cn("font-mono", index > 0 && "text-muted-foreground")}>{option.id}</span>
-                  <span className="tnum font-mono text-xs">{option.confidence.toFixed(2)}</span>
-                </div>
-                <div className="bg-muted h-1.5 overflow-hidden rounded-full">
-                  <div
-                    className={cn(
-                      "h-full rounded-full transition-[width] duration-300 ease-out-quart",
-                      index === 0 ? "bg-primary" : "bg-muted-foreground/40"
-                    )}
-                    style={{ width: `${Math.round(option.confidence * 100)}%` }}
-                  />
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-muted-foreground">
-              Run a request to see the pick, its confidence, and every option&apos;s score.
-            </p>
-          )}
-        </CardContent>
-        <CardFooter>
-          <p className="text-muted-foreground text-xs">
-            Demo mode. A local keyword matcher stands in for Jev.
-          </p>
-        </CardFooter>
-      </Card>
-    </div>
-  )
-}
-
-function SettingsScene() {
-  const [live, setLive] = React.useState(false)
-  const [explain, setExplain] = React.useState(true)
-
-  return (
-    <Card className="w-full max-w-lg">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <SettingsIcon className="text-primary size-4" />
-          Workspace settings
-        </CardTitle>
-        <CardDescription>Everything here applies immediately.</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Tabs defaultValue="general">
-          <TabsList variant="line">
-            <TabsTrigger value="general">General</TabsTrigger>
-            <TabsTrigger value="keys">API keys</TabsTrigger>
-            <TabsTrigger value="danger">Danger zone</TabsTrigger>
-          </TabsList>
-          <TabsContent value="general" className="flex flex-col gap-4 pt-4 text-sm">
-            <label className="flex items-center justify-between gap-6">
-              <span>
-                Live mode
-                <span className="text-muted-foreground block text-xs">
-                  {live ? "Requests go to Jev." : "A local matcher stands in for Jev."}
-                </span>
-              </span>
-              <Switch checked={live} onCheckedChange={setLive} />
-            </label>
-            <Separator />
-            <label className="flex items-center justify-between gap-6">
-              <span>
-                Explain decisions
-                <span className="text-muted-foreground block text-xs">Show every option&apos;s score.</span>
-              </span>
-              <Switch checked={explain} onCheckedChange={setExplain} />
-            </label>
-            <Separator />
-            <div className="flex items-center justify-between gap-6">
-              <span>Status</span>
-              <Badge variant="outline" className={cn(live ? "text-teal border-teal/40" : "text-warning border-warning/40")}>
-                <span className={cn("size-1.5 rounded-full", live ? "bg-teal" : "bg-warning")} aria-hidden="true" />
-                {live ? "Live · your key" : "Demo mode"}
-              </Badge>
-            </div>
-          </TabsContent>
-          <TabsContent value="keys" className="flex flex-col gap-3 pt-4 text-sm">
-            <label className="flex flex-col gap-1.5">
-              <span className="text-xs font-medium">TYPESAFE_API_KEY</span>
-              <Input type="password" placeholder="ts_live_…" />
-            </label>
-            <p className="text-muted-foreground text-xs">Stored in this browser only.</p>
-          </TabsContent>
-          <TabsContent value="danger" className="flex items-center justify-between gap-6 pt-4 text-sm">
-            <span>
-              Delete workspace
-              <span className="text-muted-foreground block text-xs">This cannot be undone.</span>
-            </span>
-            <Dialog>
-              <DialogTrigger render={<Button variant="destructive" />}>Delete</DialogTrigger>
-              <DialogContent showCloseButton={false}>
-                <DialogHeader>
-                  <DialogTitle>Delete this workspace?</DialogTitle>
-                  <DialogDescription>All decisions and keys are removed. This action cannot be undone.</DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                  <DialogClose render={<Button variant="outline" />}>Keep workspace</DialogClose>
-                  <DialogClose render={<Button variant="destructive" />}>Delete</DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
-    </Card>
-  )
-}
-
-const scenes: Scene[] = [
-  { id: "composer", title: "Composer", subtitle: "From intent to action", icon: PenLineIcon, Component: ComposerScene },
-  { id: "decision", title: "Decision", subtitle: "One choice, with confidence", icon: ArrowRightIcon, Component: DecisionScene },
-  { id: "settings", title: "Settings", subtitle: "Switches, tabs, and a confirm", icon: SettingsIcon, Component: SettingsScene },
-]
-
-function subscribeToHash(callback: () => void) {
+function subscribeHash(callback: () => void) {
   window.addEventListener("hashchange", callback)
   return () => window.removeEventListener("hashchange", callback)
 }
-
-/** The scene named in the URL hash, or 0. Empty on the server so the first paint matches. */
-function useHashIndex() {
+function Lab({ sources }: { sources: LabSources }) {
   const hash = React.useSyncExternalStore(
-    subscribeToHash,
-    () => window.location.hash,
+    subscribeHash,
+    () => window.location.hash.slice(1),
     () => ""
   )
-  const found = scenes.findIndex((item) => `#${item.id}` === hash)
-  return found >= 0 ? found : 0
+  const entry = labById(hash) ?? labRegistry[0]!
+  const [open, setOpen] = React.useState(false)
+  function navigate(id: string) {
+    window.location.hash = id
+    setOpen(false)
+    window.requestAnimationFrame(() =>
+      document.getElementById("lab-title")?.focus({ preventScroll: true })
+    )
+  }
+  return (
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="mx-auto w-full max-w-[1680px] outline-none"
+    >
+      <div className="grid lg:grid-cols-[224px_minmax(0,1fr)] 2xl:grid-cols-[224px_minmax(0,1fr)_176px]">
+        <aside className="catalog-rail sticky top-13 hidden h-[calc(100svh-3.25rem)] overflow-y-auto border-e lg:block">
+          <LabNavigation active={entry.id} onNavigate={navigate} />
+        </aside>
+        <div className="min-w-0 px-4 pt-5 pb-10 sm:px-6">
+          <header id="lab-overview" className="mb-5 border-b pb-5">
+            <p className="eyebrow mb-2">TypeSafe UI / Jev experiments</p>
+            <h1 className="text-2xl font-medium tracking-[-0.04em] sm:text-3xl">
+              Component lab
+            </h1>
+            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+              Explore {catalogLabCount} playground examples, {workspaceLabCount}{" "}
+              workspace scenarios. Edit inputs, explore typed responses, and
+              reuse the components.
+            </p>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <Badge variant="outline">
+                Local previews · no provider calls
+              </Badge>
+              <Sheet open={open} onOpenChange={setOpen}>
+                <SheetTrigger
+                  render={
+                    <Button variant="outline" size="sm" className="lg:hidden" />
+                  }
+                >
+                  <PanelLeftIcon /> Browse Labs
+                </SheetTrigger>
+                <SheetContent
+                  side="left"
+                  className="w-80 max-w-[90vw] overflow-y-auto"
+                >
+                  <SheetHeader>
+                    <SheetTitle>Browse Labs</SheetTitle>
+                    <SheetDescription>
+                      Search every Jev example and interface pattern.
+                    </SheetDescription>
+                  </SheetHeader>
+                  <LabNavigation
+                    active={entry.id}
+                    onNavigate={navigate}
+                    mobile
+                  />
+                </SheetContent>
+              </Sheet>
+            </div>
+          </header>
+          {hash && !labById(hash) ? (
+            <p role="status" className="mb-4 rounded-lg border p-3 text-sm">
+              This Lab was not found. Showing Composer; use the example browser
+              to choose another.
+            </p>
+          ) : null}
+          <LabExample
+            key={entry.id}
+            entry={entry}
+            sources={sources}
+            navigate={navigate}
+          />
+          <footer className="mt-10 border-t pt-5 text-xs leading-relaxed text-muted-foreground">
+            Adapted from{" "}
+            <a
+              className="underline underline-offset-4"
+              href={playgroundSource}
+              target="_blank"
+              rel="noreferrer"
+            >
+              TypeSafeAI/typesafe-playground
+            </a>{" "}
+            (MIT). Original playground by @nickthompson480; community extensions
+            by its contributors. These component previews are independent of the
+            upstream live services.
+          </footer>
+        </div>
+        <aside className="sticky top-13 hidden h-fit space-y-4 px-4 pt-6 2xl:block">
+          <p className="eyebrow">In this Lab</p>
+          <nav
+            aria-label="Lab outline"
+            className="flex flex-col gap-3 text-xs text-muted-foreground"
+          >
+            <a
+              href="#lab-overview"
+              onClick={(event) => {
+                event.preventDefault()
+                document.getElementById("lab-overview")?.scrollIntoView()
+              }}
+            >
+              Overview
+            </a>
+            <a
+              href="#lab-preview"
+              onClick={(event) => {
+                event.preventDefault()
+                document.getElementById("lab-preview")?.scrollIntoView()
+              }}
+            >
+              Preview &amp; source
+            </a>
+            <a
+              href="#lab-install"
+              onClick={(event) => {
+                event.preventDefault()
+                document.getElementById("lab-install")?.scrollIntoView()
+              }}
+            >
+              Installation
+            </a>
+            <a
+              href="#lab-notes"
+              onClick={(event) => {
+                event.preventDefault()
+                document.getElementById("lab-notes")?.scrollIntoView()
+              }}
+            >
+              Experiment notes
+            </a>
+          </nav>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1 text-xs text-primary"
+          >
+            Component library <ArrowUpRightIcon className="size-3" />
+          </Link>
+        </aside>
+      </div>
+    </main>
+  )
 }
 
-function Lab() {
-  const hashIndex = useHashIndex()
-  const [override, setOverride] = React.useState<number | null>(null)
-  const index = override ?? hashIndex
-  const scene = scenes[index]!
-  const total = scenes.length
-
-  function go(next: number) {
-    const wrapped = (next + total) % total
-    setOverride(wrapped)
-    window.history.replaceState(null, "", `#${scenes[wrapped]!.id}`)
-  }
-
+function LabExample({
+  entry,
+  sources,
+  navigate,
+}: {
+  entry: LabEntry
+  sources: LabSources
+  navigate: (id: string) => void
+}) {
+  const [view, setView] = React.useState("preview")
+  const defaultFile =
+    entry.kind === "classic"
+      ? "components/labs/classic-scenes.tsx"
+      : "components/labs/typed-preview.tsx"
+  const [file, setFile] = React.useState(defaultFile)
+  const peers = labRegistry.filter(
+    (candidate) => candidate.group === entry.group
+  )
+  const index = peers.findIndex((candidate) => candidate.id === entry.id)
+  const Classic = classics[entry.id as keyof typeof classics]
+  const dataCode = JSON.stringify(entry, null, 2)
+  const classicName = classicNames[entry.id as keyof typeof classicNames]
+  const importCode = Classic
+    ? `import { ${classicName} } from "@/components/labs/classic-scenes"\n\n<${classicName} />`
+    : `import { TypedPreview } from "@/components/labs/typed-preview"\nimport { labById } from "@/lib/lab-registry"\n\nconst example = labById("${entry.id}")!\n\n<TypedPreview entry={example} />`
   return (
-    <main id="main-content" tabIndex={-1} className="mx-auto w-full max-w-[1680px] px-4 pt-8 pb-16 outline-none sm:px-6">
-      <header className="mb-6">
-        <p className="eyebrow mb-3">Lab</p>
-        <h1 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">Component lab</h1>
-        <p className="text-muted-foreground mt-2 text-base">
-          <span className="tnum">{total}</span> interactive scenes, built from the library.
+    <article
+      className="lab-example min-w-0 space-y-4"
+      aria-labelledby="lab-title"
+    >
+      <header className="space-y-2">
+        <p className="eyebrow">{entry.group}</p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2
+            id="lab-title"
+            tabIndex={-1}
+            className="min-w-0 flex-1 text-xl font-semibold tracking-tight outline-none sm:text-2xl"
+          >
+            {entry.title}
+          </h2>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-xs text-muted-foreground">
+              {String(index + 1).padStart(2, "0")} /{" "}
+              {String(peers.length).padStart(2, "0")}
+            </span>
+            <Button
+              variant="outline"
+              size="icon-sm"
+              aria-label="Previous scene"
+              onClick={() =>
+                navigate(peers[(index - 1 + peers.length) % peers.length]!.id)
+              }
+            >
+              <ArrowLeftIcon className="rtl:rotate-180" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon-sm"
+              aria-label="Next scene"
+              onClick={() => navigate(peers[(index + 1) % peers.length]!.id)}
+            >
+              <ArrowRightIcon className="rtl:rotate-180" />
+            </Button>
+          </div>
+        </div>
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          {entry.description}
         </p>
       </header>
-
-      <section aria-label="Scenes" className="bg-card/60 shadow-surface flex flex-col overflow-hidden rounded-xl">
-        <div className="flex items-center justify-between gap-4 border-b px-4 py-3 sm:px-5">
-          <div className="flex items-center gap-3">
-            <span className="bg-muted flex size-9 items-center justify-center rounded-lg border">
-              <scene.icon className="size-4" />
-            </span>
-            <div>
-              <h2 className="text-base font-medium leading-tight">{scene.title}</h2>
-              <p className="text-muted-foreground text-xs">{scene.subtitle}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-muted-foreground tnum font-mono text-xs whitespace-nowrap">
-              {String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}
-            </span>
-            <Button variant="outline" size="icon" aria-label="Previous scene" onClick={() => go(index - 1)}>
-              <ArrowLeftIcon />
-            </Button>
-            <Button variant="outline" size="icon" aria-label="Next scene" onClick={() => go(index + 1)}>
-              <ArrowRightIcon />
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex min-h-[32rem] items-center justify-center p-4 sm:p-10">
-          {/* Keyed so each scene change replays the entrance once. */}
-          <div key={scene.id} className="scene-enter flex w-full justify-center">
-            <scene.Component />
-          </div>
-        </div>
-
-        <nav aria-label="Scene tabs" className="grid grid-cols-3 border-t">
-          {scenes.map((item, itemIndex) => (
-            <button
-              key={item.id}
-              type="button"
-              aria-current={itemIndex === index ? "true" : undefined}
-              onClick={() => go(itemIndex)}
-              className={cn(
-                "flex flex-col items-center gap-1.5 px-2 py-3 text-xs transition-colors outline-none focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:ring-inset",
-                itemIndex === index ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"
-              )}
+      <section id="lab-preview" className="min-w-0">
+        <Tabs value={view} onValueChange={setView}>
+          <TabsList
+            variant="line"
+            aria-label="Lab view"
+            className="w-full justify-start border-b"
+          >
+            <TabsTrigger value="preview" className="flex-none px-4">
+              Preview
+            </TabsTrigger>
+            <TabsTrigger value="source" className="flex-none px-4">
+              Source
+            </TabsTrigger>
+          </TabsList>
+          <div className="lab-console mt-2 w-full min-w-0 overflow-hidden rounded-xl">
+            <div
+              className={`lab-stage p-3 sm:p-4 ${view === "source" ? "hidden" : ""}`}
+              inert={view === "source"}
             >
-              <item.icon className="size-4" />
-              {item.title}
-            </button>
-          ))}
-        </nav>
-        <div className="text-muted-foreground flex items-center justify-between border-t px-4 py-2 text-xs sm:px-5">
-          <span>Interactive examples · Use the tabs or arrows</span>
-          <Link href="/" className="hover:text-foreground inline-flex items-center gap-1">
-            View in library <ArrowUpRightIcon className="size-3" strokeWidth={1.5} />
-          </Link>
-        </div>
+              <div className="scene-enter flex min-w-0 justify-center">
+                {Classic ? <Classic /> : <TypedPreview entry={entry} />}
+              </div>
+            </div>
+            {view === "source" ? (
+              <div className="min-w-0 space-y-4 p-4">
+                <label className="flex flex-col gap-2 text-xs">
+                  Source file
+                  <select
+                    aria-label="Source file"
+                    className="min-w-0 rounded border bg-background p-2 font-mono text-xs"
+                    value={file}
+                    onChange={(event) => setFile(event.target.value)}
+                  >
+                    <option value="example">Example data · {entry.id}</option>
+                    {Object.keys(sources.files).map((name) => (
+                      <option key={name}>{name}</option>
+                    ))}
+                  </select>
+                </label>
+                {file === "example" ? (
+                  <div className="min-w-0">
+                    <div className="flex justify-end">
+                      <CopyButton code={dataCode} label="Lab example data" />
+                    </div>
+                    <pre
+                      dir="ltr"
+                      className="max-h-[32rem] overflow-auto rounded bg-muted p-3 text-xs"
+                    >
+                      {dataCode}
+                    </pre>
+                  </div>
+                ) : (
+                  <div className="max-h-[36rem] overflow-auto">
+                    <CodeSnippet {...sources.files[file]!} label={file} />
+                  </div>
+                )}
+              </div>
+            ) : null}
+          </div>
+        </Tabs>
       </section>
-    </main>
+      <div className="lab-reuse grid items-start gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+        <section id="lab-install" className="min-w-0 space-y-3">
+          <Tabs defaultValue="install">
+            <TabsList
+              variant="line"
+              aria-label="Lab code"
+              className="w-full justify-start border-b"
+            >
+              <TabsTrigger value="install" className="flex-none px-4">
+                Install
+              </TabsTrigger>
+              <TabsTrigger value="import" className="flex-none px-4">
+                Import
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="install" className="pt-3">
+              <CodeSnippet
+                {...sources.install}
+                label="Install Lab workspace"
+                kind="terminal"
+              />
+            </TabsContent>
+            <TabsContent value="import" className="pt-3">
+              <div className="min-w-0 overflow-hidden rounded-xl border bg-card">
+                <div className="flex items-center justify-between gap-2 border-b px-3 py-1">
+                  <span className="text-xs">Import {entry.title}</span>
+                  <CopyButton code={importCode} label="Lab import" />
+                </div>
+                <pre dir="ltr" className="overflow-auto p-4 font-mono text-xs">
+                  {importCode}
+                </pre>
+              </div>
+            </TabsContent>
+          </Tabs>
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Workspace setup, not an npm package install. These examples use{" "}
+            <code>@/</code> app imports and <code>@workspace/ui</code>{" "}
+            primitives. To port a Lab, copy its renderer, example data,
+            dependencies, and shared tokens together.
+          </p>
+        </section>
+        <section
+          id="lab-notes"
+          className="space-y-3 rounded-xl bg-card p-4 shadow-sm ring-1 ring-border"
+        >
+          <h3 className="text-sm font-medium">Try this</h3>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {entry.tryThis}
+          </p>
+          {entry.kind !== "classic" ? (
+            <a
+              href={`${playgroundSource.replace("/tree/", "/blob/")}/${entry.sourceFile}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-xs text-primary underline underline-offset-4"
+            >
+              Upstream example source <ArrowUpRightIcon className="size-3" />
+            </a>
+          ) : null}
+        </section>
+      </div>
+    </article>
   )
 }
 

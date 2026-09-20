@@ -1,5 +1,7 @@
 import type { Metadata } from "next"
 
+import { loadLabSources } from "@/lib/lab-sources"
+
 import { Lab } from "@/components/lab"
 
 export const metadata: Metadata = {
@@ -7,6 +9,6 @@ export const metadata: Metadata = {
   description: "Interactive scenes built from the TypeSafe UI library.",
 }
 
-export default function LabPage() {
-  return <Lab />
+export default async function LabPage() {
+  return <Lab sources={await loadLabSources()} />
 }

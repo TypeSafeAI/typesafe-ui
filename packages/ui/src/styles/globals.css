@@ -69,32 +69,32 @@
 :root {
     --background: #f7f7f8;
     --foreground: #1b1b1f;
-    --dot: #e4e4e7;
+    --dot: #e6e8ed;
     --card: #ffffff;
     --card-foreground: #1b1b1f;
     --popover: #ffffff;
     --popover-foreground: #1b1b1f;
-    --primary: #d94a79;
+    --primary: #bb305f;
     --primary-foreground: #ffffff;
     --secondary: #f2f2f4;
     --secondary-foreground: #1b1b1f;
     --muted: #f2f2f4;
-    --muted-foreground: #6f7076;
+    --muted-foreground: #62656d;
     --accent: #e9e9ec;
     --accent-foreground: #1b1b1f;
     --destructive: #c53030;
     --border: #e0e0e4;
     --input: #b8b9c0;
     --ring: #d94a79;
-    --teal: #0b8f84;
+    --teal: #087d75;
     --success: #15803d;
-    --warning: #b7791f;
+    --warning: #8c5f14;
     --chart-1: #d94a79;
     --chart-2: #0b8f84;
     --chart-3: #15803d;
     --chart-4: #b7791f;
     --chart-5: #c53030;
-    --radius: 0.5rem;
+    --radius: 0.625rem;
     --sidebar: #f7f7f8;
     --sidebar-foreground: #1b1b1f;
     --sidebar-primary: #d94a79;
@@ -118,10 +118,10 @@
 }
 
 .dark {
-    --background: #0f1012;
+    --background: #0c1015;
     --foreground: #f4f4f5;
-    --dot: #1c1d21;
-    --card: #16171a;
+    --dot: #19212c;
+    --card: #151a21;
     --card-foreground: #f4f4f5;
     --popover: #1e2024;
     --popover-foreground: #f4f4f5;
@@ -130,11 +130,11 @@
     --secondary: #1e2024;
     --secondary-foreground: #f4f4f5;
     --muted: #1e2024;
-    --muted-foreground: #86878d;
+    --muted-foreground: #a2a9b5;
     --accent: #26282d;
     --accent-foreground: #f4f4f5;
     --destructive: #f0564f;
-    --border: #2a2c31;
+    --border: #2b333e;
     --input: #4a4d55;
     --ring: #f386a1;
     --teal: #19bcae;
@@ -171,7 +171,7 @@
   body {
     @apply bg-background text-foreground;
     background-image: radial-gradient(var(--dot) 1px, transparent 1.2px);
-    background-size: 8px 8px;
+    background-size: 16px 16px;
     text-rendering: optimizeLegibility;
   }
   ::selection {
@@ -229,4 +229,28 @@
 .dark .shiki,
 .dark .shiki span {
   color: var(--shiki-dark) !important;
+}
+
+/* Native meter semantics, with the same track and accent in both themes. */
+.jev-meter {
+  appearance: none;
+  border: 0;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--muted);
+}
+.jev-meter::-webkit-meter-bar {
+  height: 100%;
+  border: 0;
+  border-radius: 999px;
+  background: var(--muted);
+  box-shadow: none;
+}
+.jev-meter::-webkit-meter-optimum-value {
+  border-radius: 999px;
+  background: var(--teal);
+}
+.jev-meter::-moz-meter-bar {
+  border-radius: 999px;
+  background: var(--teal);
 }
