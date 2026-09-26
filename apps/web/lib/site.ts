@@ -4,7 +4,7 @@ export const site = {
   name: "TypeSafe UI",
   tagline: "Small parts. Clear interfaces.",
   description:
-    "shadcn-style components and blocks for building TypeSafe AI products. Preview, inspect, and reuse.",
+    "Unofficial community React components and interface patterns for TypeSafe AI projects. Preview, inspect, and reuse source.",
   url: "https://typesafe-ui.vercel.app",
   /** BCP 47 language tag applied to <html lang>. */
   lang: "en",
