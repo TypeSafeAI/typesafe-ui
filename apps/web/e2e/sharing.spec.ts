@@ -1,3 +1,4 @@
+import { writeFile } from "node:fs/promises"
 import { expect, test } from "@playwright/test"
 
 // All previews in this workspace are local fixtures; no provider keys are used.
@@ -10,7 +11,7 @@ test("public sharing metadata resolves to a real PNG", async ({ page, request },
   await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute("content", "summary_large_image")
   await expect(page.locator('meta[name="description"]')).toHaveAttribute("content", /unofficial/i)
 
-  for (const metadata of [og, twitter]) {
+  for (const [name, metadata] of [["og", og], ["twitter", twitter]] as const) {
     const image = new URL((await metadata.getAttribute("content"))!)
     // Fetch this build, not the configured production origin.
     const response = await request.get(image.pathname + image.search)
@@ -20,7 +21,9 @@ test("public sharing metadata resolves to a real PNG", async ({ page, request },
     expect(body.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a")
     expect(body.readUInt32BE(16)).toBe(1200)
     expect(body.readUInt32BE(20)).toBe(630)
-    await testInfo.attach("generated-og.png", { body, contentType: "image/png" })
+    const path = testInfo.outputPath(`generated-${name}.png`)
+    await writeFile(path, body)
+    await testInfo.attach(name, { path, contentType: "image/png" })
   }
 
   await page.setViewportSize({ width: 1440, height: 960 })
@@ -28,14 +31,13 @@ test("public sharing metadata resolves to a real PNG", async ({ page, request },
   await page.screenshot({ path: testInfo.outputPath("library-desktop.png"), animations: "disabled" })
   await page.setViewportSize({ width: 390, height: 844 })
   await page.screenshot({ path: testInfo.outputPath("library-mobile.png"), animations: "disabled" })
-  await testInfo.attach("capture-provenance.json", {
-    body: Buffer.from(JSON.stringify({
-      commit: process.env.GITHUB_SHA ?? "local-unrecorded",
-      route: "/", mode: "local fixtures; no provider key",
-      environment: "Playwright local server, not production",
-      desktop: { width: 1440, height: 960 }, mobile: { width: 390, height: 844 },
-      note: "Viewport captures from the existing default theme; not an accessibility certification."
-    }, null, 2)),
-    contentType: "application/json"
-  })
+  const provenance = testInfo.outputPath("capture-provenance.json")
+  await writeFile(provenance, JSON.stringify({
+    commit: process.env.GITHUB_SHA ?? "local-unrecorded",
+    route: "/", mode: "local fixtures; no provider key",
+    environment: "Playwright local server, not production",
+    desktop: { width: 1440, height: 960 }, mobile: { width: 390, height: 844 },
+    note: "Viewport captures from the existing default theme; not an accessibility certification."
+  }, null, 2))
+  await testInfo.attach("capture provenance", { path: provenance, contentType: "application/json" })
 })
