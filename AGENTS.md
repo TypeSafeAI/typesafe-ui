@@ -35,15 +35,19 @@ Run from the repository root:
 pnpm lint
 pnpm typecheck
 pnpm build
+pnpm test:e2e
+node --test scripts/social-metadata.test.mjs
 ```
 
 For UI changes, also inspect the component's Preview and Source tabs, Install and Import examples, `/lab`, keyboard behavior, light/dark modes, narrow screens, and RTL. `pnpm format` writes files; avoid unrelated formatting churn.
 
-There is no root unit-test or E2E script at this revision. Do not invent `pnpm test`, report manual inspection as automated coverage, or claim a build proves accessibility. State which checks ran, their results, and any environment limitation.
+There is no root unit-test script named `test`; the root does define `test:e2e`. Do not invent `pnpm test`, report manual inspection as automated coverage, or claim a build proves accessibility. The standalone social-metadata check validates source invariants, not a rendered HTTP response. State which checks ran, their results, and any environment limitation.
 
 ## Documentation and handoff
 
 Keep README.md and CONTRIBUTING.md consistent with the manifests. Keep CLAUDE.md as a pointer to this file rather than a competing policy. Preserve attribution to shadcn/ui, Base UI, TypeSafe-inspired branding, and the OpenCoven layout inspiration; do not imply vendor endorsement.
+
+Read `docs/discovery/README.md` for sharing and screenshot guidance. The generated OG route must use public editorial copy only, never request content, credentials, or live model calls. Preserve existing per-page metadata and do not canonicalize all routes to the homepage.
 
 `repository-metadata.json` records intended GitHub About text/topics only. Applying it requires a separate authorized GitHub settings action; editing the file alone does not publish topics. Do not create release tags, publish packages, change licensing, or change repository visibility unless explicitly requested.
 
