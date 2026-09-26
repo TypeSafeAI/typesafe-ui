@@ -1,6 +1,6 @@
 {
   "repository": "TypeSafeAI/typesafe-ui",
-  "description": "Community React components and UI patterns for TypeSafe AI projects, built with shadcn/ui, Base UI, Tailwind CSS, and a Next.js component lab.",
+  "description": "Unofficial React component workspace and interface patterns for TypeSafe AI projects using Next.js, shadcn/ui, Base UI, Tailwind CSS, and Turborepo.",
   "topics": [
     "typesafe-ai",
     "react",
@@ -11,8 +11,8 @@
     "tailwindcss",
     "component-library",
     "design-system",
-    "turborepo",
-    "pnpm"
+    "turborepo"
   ],
-  "note": "Intended GitHub About metadata. This file does not apply repository settings automatically."
+  "status": "proposed-not-applied",
+  "note": "Capability-focused discovery metadata. Committing this file does not itself change GitHub repository settings."
 }
